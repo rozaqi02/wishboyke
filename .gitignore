@@ -34,6 +34,18 @@ temp/
 *.tmp
 scratch*
 scratch_*.html
+test_*.*
+
+# Coverage & Test outputs
+coverage/
+*.lcov
+.nyc_output/
+
+# Tool & Framework Caches
+.eslintcache
+.turbo/
+.vercel/
+.netlify/
 
 # Editor directories and files
 .vscode/*
@@ -46,7 +58,10 @@ scratch_*.html
 *.sw?
 *.swo
 
-# OS files
+# OS & Agent files
 .DS_Store
 Thumbs.db
 ehthumbs.db
+.gemini/
+.antigravity/
+

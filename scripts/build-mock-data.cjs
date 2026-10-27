@@ -149,7 +149,7 @@ const products = raw.map((item, idx) => {
     compare_at_price: item.compare_at_price,
     stock: 50 + (idx * 7) % 80,
     weight_gram: getWeight(item.slug),
-    images: validImages.length > 0 ? validImages : ['/images/dr-boyke-wish.jpg'],
+    images: validImages.length > 0 ? validImages : ['/images/wish-logo-square.png'],
     bpom_number: getBpom(item.slug),
     is_best_seller: isBest,
     is_featured: isFeat,

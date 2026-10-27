@@ -13,7 +13,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [imageError, setImageError] = useState(false);
   const [added, setAdded] = useState(false);
 
-  const fallbackImage = '/images/dr-boyke-wish.jpg';
+  const fallbackImage = '/images/wish-logo-square.png';
   const displayImage = imageError || !product.images[0] ? fallbackImage : product.images[0];
 
   const isSoldOut = product.stock <= 0;

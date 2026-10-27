@@ -113,6 +113,8 @@ export const Home: React.FC = () => {
             src="/images/dr-boyke-hero.jpg"
             alt="Wish by dr. Boyke Dian Nugraha - Official Health & Wellness"
             className="w-full h-full object-cover object-[75%_center] sm:object-right filter brightness-[0.98]"
+            loading="eager"
+            fetchPriority="high"
           />
           <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-white/95 via-white/75 sm:via-white/45 to-transparent" />
         </div>

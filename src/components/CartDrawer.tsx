@@ -133,7 +133,7 @@ export const CartDrawer: React.FC = () => {
                   className="flex gap-3 p-3 rounded-lg border border-gray-100 bg-white hover:border-gray-200 transition"
                 >
                   <img
-                    src={product.images[0] || '/images/dr-boyke-wish.jpg'}
+                    src={product.images[0] || '/images/wish-logo-square.png'}
                     alt={product.title}
                     className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-contain p-1 bg-white border border-stone-200 flex-shrink-0"
                   />
