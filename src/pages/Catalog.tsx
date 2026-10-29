@@ -88,7 +88,7 @@ export const Catalog: React.FC = () => {
   const selectedCategoryName = categories.find((c) => c.slug === selectedCategorySlug)?.name;
 
   return (
-    <div className="bg-[#FFFDF7] min-h-screen">
+    <div className="bg-[#FFFDF7] min-h-screen pb-safe">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-10">
         {/* 1. Page Title (Exact UMA Women centered "Shop All" title with zero description fluff) */}
         <div className="pt-2 sm:pt-4 pb-2 sm:pb-4 text-center">
@@ -168,7 +168,7 @@ export const Catalog: React.FC = () => {
 
         {/* Panel */}
         <div
-          className={`fixed inset-y-0 right-0 w-[85vw] max-w-[360px] bg-white shadow-2xl z-[10000] flex flex-col transform transition-transform duration-300 ease-out ${
+          className={`fixed inset-y-0 right-0 w-[85vw] max-w-[360px] bg-white shadow-2xl z-[10000] flex flex-col transform transition-transform duration-300 ease-out pt-safe pb-safe ${
             showFilterDrawer ? 'translate-x-0' : 'translate-x-full'
           }`}
         >

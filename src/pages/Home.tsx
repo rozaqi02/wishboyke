@@ -5,7 +5,7 @@ import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../lib/mockData';
 import { ProductCard } from '../components/ProductCard';
 import { ProductGridSkeleton } from '../components/SkeletonLoader';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, ShieldCheck, Lock } from 'lucide-react';
+import { Sparkles, ShieldCheck, Lock } from 'lucide-react';
 
 export const Home: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -106,47 +106,49 @@ export const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col bg-white">
-      {/* 1. HERO SECTION (Minimalist, clean, Scandinavian wellness) */}
-      <section className="relative w-full min-h-[520px] sm:min-h-[600px] lg:min-h-[660px] -mt-14 sm:-mt-16 pt-20 sm:pt-24 flex items-end sm:items-center overflow-hidden bg-[#FAF6F0]">
+      {/* 1. HERO SECTION (Minimalist, clean, lifestyle banner with bottom-left editorial overlay) */}
+      <section className="relative w-full min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] h-[80svh] sm:h-[84vh] max-h-[820px] 2xl:max-h-[880px] -mt-[60px] flex items-end justify-start overflow-hidden bg-white">
         <div className="absolute inset-0 z-0">
-          <img
-            src="/images/dr-boyke-hero.jpg"
-            alt="Wish by dr. Boyke Dian Nugraha - Official Health & Wellness"
-            className="w-full h-full object-cover object-[75%_center] sm:object-right filter brightness-[0.98]"
-            loading="eager"
-            fetchPriority="high"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-white/95 via-white/75 sm:via-white/45 to-transparent" />
+          <picture className="w-full h-full block">
+            <source
+              media="(max-width: 767px), (orientation: portrait) and (max-width: 1024px)"
+              srcSet="/images/dr-boyke-herbal-hero-mobile.jpg"
+            />
+            <img
+              src="/images/dr-boyke-herbal-hero.jpg"
+              alt="Wish Boyke &amp; Co. - Suplemen Herbal Terbaik Untuk Wanita"
+              className="w-full h-full object-cover object-top md:object-[95%_center] lg:object-[82%_center] xl:object-[60%_center] 2xl:object-[45%_center]"
+              loading="eager"
+              fetchPriority="high"
+            />
+          </picture>
+          {/* Subtle gradient overlay ensuring high editorial text contrast at the bottom-left */}
+          <div className="absolute inset-0 bg-gradient-to-t from-white/30 via-transparent to-transparent md:bg-gradient-to-r md:from-[#D8998F]/30 md:via-[#D8998F]/10 md:to-transparent pointer-events-none" />
         </div>
 
-        <div className="relative z-10 max-w-[1440px] w-full mx-auto px-6 sm:px-10 lg:px-16 py-16 sm:py-20">
-          <div className="max-w-xl space-y-4">
-            <span className="text-xs uppercase tracking-[0.2em] font-medium text-[#1A1815] block">
+        {/* Text overlay strictly positioned in the bottom-left corner */}
+        <div className="relative z-10 max-w-[1440px] w-full mx-auto px-6 sm:px-10 lg:px-16 pb-12 sm:pb-16 pt-24">
+          <div className="max-w-2xl lg:max-w-3xl space-y-2.5 sm:space-y-3">
+            <span className="text-[11px] sm:text-xs uppercase tracking-[0.25em] font-medium text-stone-700 block">
               FORMULA RESMI DR. BOYKE
             </span>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-[46px] font-normal text-[#1A1815] tracking-tight leading-[1.15]">
-              Kesehatan Reproduksi &amp; Keharmonisan Alami
+            <h1 className="text-[19px] sm:text-2xl md:text-3xl lg:text-[34px] xl:text-[38px] font-normal text-[#1A1815] tracking-tight leading-none whitespace-nowrap">
+              Suplemen Herbal Terbaik Untuk Wanita
             </h1>
-            <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-md">
-              Rangkaian perawatan herbal teruji, izin resmi BPOM, dan tersertifikasi halal MUI.
+            
+            <p className="text-[11px] sm:text-xs md:text-sm text-stone-700 font-normal leading-normal whitespace-nowrap">
+              Formula klinis teruji dr. Boyke Dian Nugraha • 100% herbal berkhasiat terdaftar BPOM &amp; Halal.
             </p>
-            <div className="pt-2 flex items-center gap-4 flex-wrap">
+
+            {/* Clean underlined uppercase CTA with subtle hover transition matching UMA */}
+            <div className="pt-2 sm:pt-3 flex items-center gap-6">
               <Link
                 to="/catalog"
-                className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#1A1815] hover:bg-[#009B4C] text-white text-xs sm:text-sm font-medium tracking-wider uppercase rounded-full transition duration-200"
+                className="inline-block text-xs sm:text-sm uppercase tracking-[0.2em] font-semibold text-[#1A1815] border-b-2 border-[#1A1815] pb-1 hover:text-[#009B4C] hover:border-[#009B4C] transition-colors duration-200"
               >
-                <span>Shop All</span>
-                <ArrowRight className="w-4 h-4" />
+                BELANJA SEMUA PRODUK
               </Link>
-              <a
-                href="https://wa.me/6281234567890?text=Halo%20Wish%20Boyke,%20saya%20ingin%20konsultasi"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center text-xs sm:text-sm font-medium tracking-wide text-[#1A1815] hover:text-[#009B4C] border-b border-[#1A1815] pb-0.5 transition"
-              >
-                <span>Konsultasi WhatsApp</span>
-              </a>
             </div>
           </div>
         </div>

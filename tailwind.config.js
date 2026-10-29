@@ -81,12 +81,16 @@ export default {
           'sans-serif',
         ],
         serif: [
-          '"New York"',
-          '"Iowan Old Style"',
-          '"Apple Garamond"',
-          'Baskerville',
-          '"Times New Roman"',
-          'serif',
+          '"DM Sans"',
+          '"Afacad"',
+          '-apple-system',
+          'sans-serif',
+        ],
+        mono: [
+          '"DM Sans"',
+          'ui-monospace',
+          'SFMono-Regular',
+          'sans-serif',
         ],
       },
       borderRadius: {

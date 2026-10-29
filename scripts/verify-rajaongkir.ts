@@ -73,8 +73,8 @@ async function runTests() {
   assert(parsedDest[0].city === 'Jakarta Pusat', 'City must match');
   console.log('✓ Komerce V2 destination JSON parsed correctly:', parsedDest[0].label);
 
-  console.log('\n--- TEST 3: Real Komerce V2 Nested Cost Parsing (CRITICAL FIX) ---');
-  // Test nested `costs[].cost[].value` format (standard Komerce V2 live response)
+  console.log('\n--- TEST 3: Real Komerce V2 J&T Express Nested Cost Parsing ---');
+  // Test nested `costs[].cost[].value` format (standard Komerce V2 J&T live response)
   const mockKomerceCostResponse = {
     meta: {
       code: 200,
@@ -83,43 +83,37 @@ async function runTests() {
     },
     data: [
       {
-        code: 'jne',
-        name: 'Jalur Nugraha Ekakurir (JNE)',
+        code: 'jnt',
+        name: 'J&T Express',
         costs: [
           {
-            service: 'REG',
-            description: 'Layanan Reguler',
+            service: 'EZ',
+            description: 'Layanan Reguler J&T Express',
             cost: [
               {
-                value: 17000,
-                etd: '2-3',
+                value: 10000,
+                etd: '1-2',
                 note: '',
               },
             ],
           },
           {
-            service: 'YES',
-            description: 'Yakin Esok Sampai',
+            service: 'Super',
+            description: 'Kiriman Kilat J&T Express (Besok Sampai)',
             cost: [
               {
-                value: 32000,
+                value: 18000,
                 etd: '1-1',
                 note: '',
               },
             ],
           },
-        ],
-      },
-      {
-        code: 'pos',
-        name: 'POS Indonesia',
-        costs: [
           {
-            service: 'Pos Reguler',
-            description: 'Layanan Reguler POS',
+            service: 'ECO',
+            description: 'Tarif Hemat Ekonomis J&T Express',
             cost: [
               {
-                value: 15000,
+                value: 8000,
                 etd: '2-3',
                 note: '',
               },
@@ -131,41 +125,57 @@ async function runTests() {
   };
 
   const parsedCostOptions = parseRajaOngkirCostResponse(mockKomerceCostResponse);
-  assert(parsedCostOptions.length === 3, 'Should parse 3 courier services');
+  assert(parsedCostOptions.length === 3, 'Should parse 3 J&T Express services');
   assert(typeof parsedCostOptions[0].cost === 'number', 'Parsed cost must be a numeric primitive');
-  assert(parsedCostOptions[0].cost === 15000, 'Lowest cost option (POS) should be first: 15000');
-  assert(parsedCostOptions[0].courier_code === 'pos', 'First option should be POS (sorted ascending)');
-  assert(parsedCostOptions[1].cost === 17000, 'Second option should be JNE REG: 17000');
-  assert(parsedCostOptions[1].etd.includes('2-3'), 'ETD should be extracted from nested cost array: ' + parsedCostOptions[1].etd);
-  assert(parsedCostOptions[2].cost === 32000, 'Third option should be JNE YES: 32000');
-  assert(parsedCostOptions[2].badge === 'Tercepat (Esok Hari)', 'JNE YES should receive fastest badge');
-  console.log('✓ Komerce V2 nested costs successfully parsed:');
+  assert(parsedCostOptions[0].cost === 8000, 'Lowest cost option (J&T ECO) should be first: 8000');
+  assert(parsedCostOptions[0].courier_code === 'jnt', 'Courier code must be jnt');
+  assert(parsedCostOptions[0].badge === 'Paling Hemat', 'J&T ECO should receive Paling Hemat badge');
+  assert(parsedCostOptions[1].cost === 10000, 'Second option should be J&T EZ: 10000');
+  assert(parsedCostOptions[1].badge === 'Paling Populer', 'J&T EZ should receive Paling Populer badge');
+  assert(parsedCostOptions[2].cost === 18000, 'Third option should be J&T Super: 18000');
+  assert(parsedCostOptions[2].badge === 'Tercepat (Esok Hari)', 'J&T Super should receive fastest badge');
+  console.log('✓ Komerce V2 J&T Express nested costs successfully parsed:');
   parsedCostOptions.forEach(o => {
     console.log(`   • [${o.courier_code.toUpperCase()}] ${o.service}: Rp${o.cost} (${o.etd}) [${o.badge || 'Standar'}]`);
   });
 
-  // Test flat cost format
+  // Test flat cost format for J&T Express
   const mockFlatCostResponse = {
     data: [
       {
-        code: 'tiki',
-        name: 'TIKI',
+        code: 'jnt',
+        name: 'J&T Express',
         costs: [
           {
-            service: 'REG',
-            description: 'Regular Service TIKI',
-            cost: 16000,
-            etd: '2-3',
+            service: 'EZ',
+            description: 'Layanan Reguler J&T Express',
+            cost: 10000,
+            etd: '1-2',
           },
         ],
       },
     ],
   };
   const parsedFlat = parseRajaOngkirCostResponse(mockFlatCostResponse);
-  assert(parsedFlat.length === 1 && parsedFlat[0].cost === 16000, 'Flat cost should parse correctly');
+  assert(parsedFlat.length === 1 && parsedFlat[0].cost === 10000, 'Flat cost should parse correctly');
+  assert(parsedFlat[0].courier_code === 'jnt', 'Must be jnt courier');
   console.log('✓ Flat cost number format parsed correctly: Rp' + parsedFlat[0].cost);
 
-  console.log('\n--- TEST 4: Weight Tolerance & Scaling Calculation ---');
+  // Test strict rejection of non-J&T couriers (JNE, POS, TIKI)
+  const mockJneOnly = {
+    data: [
+      {
+        code: 'jne',
+        name: 'JNE Express',
+        costs: [{ service: 'REG', cost: [{ value: 15000 }] }],
+      },
+    ],
+  };
+  const rejectedNonJnt = parseRajaOngkirCostResponse(mockJneOnly);
+  assert(rejectedNonJnt.length === 0, 'Non-J&T couriers must be strictly rejected (expected 0, got ' + rejectedNonJnt.length + ')');
+  console.log('✓ Non-J&T couriers successfully rejected from rate list');
+
+  console.log('\n--- TEST 4: Weight Tolerance & Scaling Calculation (J&T Express Only) ---');
   // Weight <= 1000g -> 1kg
   assert(calculateBillableWeightKg(200) === 1, '200g should bill as 1kg');
   assert(calculateBillableWeightKg(1000) === 1, '1000g should bill as 1kg');
@@ -183,36 +193,39 @@ async function runTests() {
   const jaboRates = await calculateShippingRates(jabodetabekDest, 500); // 500g (billable as 1kg)
   assert(jaboRates.length > 0, 'Should return rates for Jabodetabek');
 
-  // Verify Starter Couriers: JNE, POS, TIKI
+  // Verify courier is exclusively J&T Express
   const courierCodes = new Set(jaboRates.map(r => r.courier_code));
-  assert(courierCodes.has('jne'), 'Must include JNE (Starter courier)');
-  assert(courierCodes.has('pos'), 'Must include POS Indonesia (Starter courier)');
-  assert(courierCodes.has('tiki'), 'Must include TIKI (Starter courier)');
-  console.log(`✓ RajaOngkir Starter couriers present: ${Array.from(courierCodes).join(', ')}`);
+  assert(courierCodes.has('jnt'), 'Must include J&T Express (jnt)');
+  assert(courierCodes.size === 1, 'Must strictly include ONLY J&T Express (no other couriers)');
+  console.log(`✓ Courier selection strictly limited to J&T Express: ${Array.from(courierCodes).join(', ')}`);
 
-  // Verify specific services
-  const jneReg = jaboRates.find(r => r.courier_code === 'jne' && r.service === 'REG');
-  assert(!!jneReg, 'Must have JNE REG');
-  assert(jneReg!.cost === 10000, `JNE REG in Jabodetabek should be 10000, got ${jneReg!.cost}`);
+  // Verify specific J&T services
+  const jntEz = jaboRates.find(r => r.courier_code === 'jnt' && r.service === 'EZ');
+  assert(!!jntEz, 'Must have J&T EZ');
+  assert(jntEz!.cost === 10000, `J&T EZ in Jabodetabek should be 10000, got ${jntEz!.cost}`);
 
-  const jneYes = jaboRates.find(r => r.courier_code === 'jne' && r.service === 'YES');
-  assert(!!jneYes, 'Must have JNE YES');
-  assert(jneYes!.cost === 18000, `JNE YES in Jabodetabek should be 18000, got ${jneYes!.cost}`);
+  const jntSuper = jaboRates.find(r => r.courier_code === 'jnt' && r.service === 'Super');
+  assert(!!jntSuper, 'Must have J&T Super');
+  assert(jntSuper!.cost === 18000, `J&T Super in Jabodetabek should be 18000, got ${jntSuper!.cost}`);
 
-  console.log('✓ JNE REG:', jneReg!.cost, jneReg!.etd, '| JNE YES:', jneYes!.cost, jneYes!.etd);
+  const jntEco = jaboRates.find(r => r.courier_code === 'jnt' && r.service === 'ECO');
+  assert(!!jntEco, 'Must have J&T ECO');
+  assert(jntEco!.cost === 8000, `J&T ECO in Jabodetabek should be 8000, got ${jntEco!.cost}`);
+
+  console.log('✓ J&T EZ:', jntEz!.cost, jntEz!.etd, '| J&T Super:', jntSuper!.cost, jntSuper!.etd, '| J&T ECO:', jntEco!.cost);
 
   // Scaled 2500g package
   const heavyRates = await calculateShippingRates(jabodetabekDest, 2500);
-  const heavyJneReg = heavyRates.find(r => r.courier_code === 'jne' && r.service === 'REG');
-  assert(heavyJneReg!.cost === 30000, `3 kg JNE REG should be 30000 (3x 10000), got ${heavyJneReg!.cost}`);
-  console.log('✓ 2500g package correctly scaled to 3kg rate: Rp' + heavyJneReg!.cost);
+  const heavyJntEz = heavyRates.find(r => r.courier_code === 'jnt' && r.service === 'EZ');
+  assert(heavyJntEz!.cost === 30000, `3 kg J&T EZ should be 30000 (3x 10000), got ${heavyJntEz!.cost}`);
+  console.log('✓ 2500g package correctly scaled to 3kg rate: Rp' + heavyJntEz!.cost);
 
   console.log('\n--- TEST 5: Regional Rate Variation (Luar Jawa) ---');
   const medanDest = MOCK_DESTINATIONS.find(d => d.city.includes('Medan'))!;
   const medanRates = await calculateShippingRates(medanDest, 1000);
-  const medanJneReg = medanRates.find(r => r.courier_code === 'jne' && r.service === 'REG');
-  assert(medanJneReg!.cost > jneReg!.cost, 'Shipping to Medan should cost more than Jabodetabek');
-  console.log('✓ Medan JNE REG rate: Rp' + medanJneReg!.cost + ' (' + medanJneReg!.etd + ')');
+  const medanJntEz = medanRates.find(r => r.courier_code === 'jnt' && r.service === 'EZ');
+  assert(medanJntEz!.cost > jntEz!.cost, 'Shipping to Medan should cost more than Jabodetabek');
+  console.log('✓ Medan J&T EZ rate: Rp' + medanJntEz!.cost + ' (' + medanJntEz!.etd + ')');
 
   console.log('\n--- TEST 6: API Key Storage ---');
   setRajaOngkirApiKey('test-komerce-key-12345');

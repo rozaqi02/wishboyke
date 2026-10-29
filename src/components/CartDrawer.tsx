@@ -1,15 +1,35 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { X, Trash2, Plus, Minus, ShoppingCart, ShieldCheck, ArrowRight, CheckCircle2, Lock } from 'lucide-react';
+import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const CartDrawer: React.FC = () => {
   const { items, isOpen, closeCart, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
   const navigate = useNavigate();
 
-  const FREE_SHIPPING_THRESHOLD = 150000;
+  // UMA Women Free Shipping Threshold (Rp200.000)
+  const FREE_SHIPPING_THRESHOLD = 200000;
   const progressToFreeShipping = Math.min(100, (totalPrice / FREE_SHIPPING_THRESHOLD) * 100);
   const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - totalPrice);
+
+  // Order notes state synced with localStorage
+  const [showOrderNotes, setShowOrderNotes] = useState(false);
+  const [orderNotes, setOrderNotes] = useState(() => {
+    try {
+      return localStorage.getItem('wishboyke_order_notes') || '';
+    } catch {
+      return '';
+    }
+  });
+
+  const handleNotesChange = (val: string) => {
+    setOrderNotes(val);
+    try {
+      localStorage.setItem('wishboyke_order_notes', val);
+    } catch {
+      // ignore
+    }
+  };
 
   // Close on ESC key press
   useEffect(() => {
@@ -34,154 +54,142 @@ export const CartDrawer: React.FC = () => {
     };
   }, [isOpen]);
 
+  const handleCheckout = () => {
+    closeCart();
+    navigate('/checkout');
+  };
+
   return (
     <div
-      className={`fixed inset-0 z-50 overflow-hidden transition-all duration-300 ${
+      className={`fixed inset-0 z-50 overflow-hidden font-sans transition-all duration-300 ${
         isOpen ? 'pointer-events-auto visible' : 'pointer-events-none invisible'
       }`}
       aria-hidden={!isOpen}
     >
-      {/* Backdrop with smooth fade */}
+      {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/45 backdrop-blur-[2px] transition-opacity duration-300 ease-in-out ${
+        className={`fixed inset-0 bg-black/40 backdrop-blur-[1px] transition-opacity duration-300 ease-in-out ${
           isOpen ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={closeCart}
       />
 
-      {/* Slide-over Drawer Panel */}
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-8 sm:pl-10">
+      {/* Slide-over Drawer (UMA Women Clean Ivory Style) */}
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-4 sm:pl-10">
         <div
-          className={`w-screen max-w-md bg-white shadow-2xl flex flex-col transform transition-transform duration-300 ease-out ${
+          className={`w-full max-w-[calc(100vw-1rem)] sm:max-w-md bg-white shadow-drawer flex flex-col transform transition-transform duration-300 ease-out ${
             isOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-gray-100 flex items-center justify-between bg-neutral-surface">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-brand-50 text-brand-700 flex items-center justify-center">
-                <ShoppingCart className="w-4 h-4" />
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight">
-                Keranjang Belanja
-                {totalItems > 0 && (
-                  <span className="ml-2 text-xs font-semibold px-2 py-0.5 rounded-md bg-brand-100 text-brand-800">
-                    {totalItems} item
-                  </span>
-                )}
-              </h2>
-            </div>
+          {/* Header: Cart (X items) */}
+          <div className="px-5 py-4 border-b border-[#EDE8E1] flex items-center justify-between bg-white">
+            <h2 className="text-base font-medium text-[#24211D] tracking-tight">
+              Cart ({totalItems} {totalItems === 1 ? 'item' : 'items'})
+            </h2>
             <button
               onClick={closeCart}
-              className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+              className="p-1.5 text-[#24211D] hover:opacity-60 transition rounded-full"
               aria-label="Tutup keranjang"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 stroke-[1.5]" />
             </button>
           </div>
 
-          {/* Discreet Privacy Notice */}
-          <div className="bg-emerald-50/80 border-b border-emerald-100/80 px-4 py-2.5 flex items-center gap-2 text-xs text-emerald-800 font-medium">
-            <Lock className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
-            <span>Kemasan diskrit: kardus polos tanpa label nama produk.</span>
-          </div>
-
-          {/* Free Shipping Progress Indicator */}
-          <div className="px-4 sm:px-5 py-3 border-b border-gray-100 bg-white">
-            <div className="flex justify-between text-xs text-gray-600 mb-1.5 font-medium">
+          {/* Free Shipping Goal Bar (UMA Style) */}
+          <div className="px-5 py-3.5 bg-[#FAF8F5] border-b border-[#EDE8E1]">
+            <p className="text-xs text-[#24211D] mb-2 font-normal text-center sm:text-left">
               {remainingForFreeShipping > 0 ? (
-                <span>
-                  Tambah <strong className="text-brand-700">Rp{remainingForFreeShipping.toLocaleString('id-ID')}</strong> untuk <strong>Bebas Ongkir</strong>
-                </span>
+                <>
+                  Spend <span className="font-semibold">Rp {remainingForFreeShipping.toLocaleString('id-ID')}</span> more for <span className="font-semibold uppercase tracking-wider">FREE SHIPPING 📦</span>
+                </>
               ) : (
-                <span className="text-brand-700 font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  Anda berhak mendapatkan Bebas Ongkir
+                <span className="font-medium text-[#085C31]">
+                  You are eligible for FREE SHIPPING 📦
                 </span>
               )}
-            </div>
-            <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+            </p>
+            <div className="w-full bg-[#EDE8E1] rounded-full h-1 overflow-hidden">
               <div
-                className="bg-brand-600 h-1.5 rounded-full transition-all duration-500 ease-out"
+                className="bg-[#24211D] h-1 rounded-full transition-all duration-500 ease-out"
                 style={{ width: `${progressToFreeShipping}%` }}
               />
             </div>
           </div>
 
-          {/* Items Content */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3">
+          {/* Cart Items List */}
+          <div className="flex-1 overflow-y-auto px-5 py-4 divide-y divide-[#EDE8E1]/60">
             {items.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-500">
-                <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center mb-3 text-gray-400">
-                  <ShoppingCart className="w-6 h-6" />
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-[#6B655F]">
+                <div className="w-12 h-12 rounded-full bg-[#FAF8F5] border border-[#EDE8E1] flex items-center justify-center mb-3 text-[#24211D]">
+                  <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-800 mb-1">Keranjang masih kosong</h3>
-                <p className="text-xs text-gray-500 max-w-xs mb-5 leading-relaxed">
-                  Pilih produk kesehatan reproduksi dan stamina herbal formula resmi dr. Boyke.
+                <h3 className="text-sm font-medium text-[#24211D] mb-1">Your cart is empty</h3>
+                <p className="text-xs text-[#6B655F] max-w-xs mb-6">
+                  Explore Dr. Boyke’s herbal intimate care & male vitality collection.
                 </p>
                 <button
                   onClick={closeCart}
-                  className="px-4 py-2 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white text-xs font-semibold rounded-lg shadow-xs transition"
+                  className="px-6 py-2.5 bg-[#24211D] hover:bg-black text-white text-xs font-medium rounded-full uppercase tracking-wider transition"
                 >
-                  Mulai Belanja
+                  Continue Shopping
                 </button>
               </div>
             ) : (
               items.map(({ product, quantity }) => (
-                <div
-                  key={product.id}
-                  className="flex gap-3 p-3 rounded-lg border border-gray-100 bg-white hover:border-gray-200 transition"
-                >
+                <div key={product.id} className="py-4 first:pt-1 last:pb-2 flex gap-4 items-start">
+                  {/* Thumbnail */}
                   <img
                     src={product.images[0] || '/images/wish-logo-square.png'}
                     alt={product.title}
-                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-contain p-1 bg-white border border-stone-200 flex-shrink-0"
+                    className="w-20 h-20 rounded-md object-contain p-1.5 bg-[#FAF8F5] border border-[#EDE8E1] flex-shrink-0"
                   />
-                  <div className="flex-1 min-w-0 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-start gap-1">
-                        <h4 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-snug">
-                          {product.title}
-                        </h4>
-                        <button
-                          onClick={() => removeItem(product.id)}
-                          className="text-gray-400 hover:text-red-500 p-1 transition"
-                          title="Hapus produk"
-                          aria-label="Hapus produk"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <p className="text-[11px] text-gray-500 font-medium mt-0.5">
-                        {product.bpom_number}
-                      </p>
+
+                  {/* Details */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start gap-2">
+                      <h4 className="text-sm font-medium text-[#24211D] line-clamp-2 leading-snug">
+                        {product.title}
+                      </h4>
+                      <span className="text-sm font-medium text-[#24211D] whitespace-nowrap">
+                        Rp {(product.price * quantity).toLocaleString('id-ID')}
+                      </span>
                     </div>
 
-                    <div className="flex items-center justify-between mt-2 pt-1">
-                      <span className="text-xs sm:text-sm font-bold text-brand-700">
-                        Rp{(product.price * quantity).toLocaleString('id-ID')}
-                      </span>
+                    <p className="text-xs text-[#6B655F] mt-0.5">
+                      {product.bpom_number ? `BPOM: ${product.bpom_number}` : 'Herbal Formula dr. Boyke'}
+                    </p>
 
-                      {/* Quantity Controller */}
-                      <div className="flex items-center border border-gray-200 rounded-md bg-gray-50">
+                    {/* Quantity Pill & Remove Link */}
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="inline-flex items-center border border-[#EDE8E1] rounded-full bg-white px-2 py-0.5">
                         <button
+                          type="button"
                           onClick={() => updateQuantity(product.id, quantity - 1)}
-                          className="p-1 hover:bg-gray-200 text-gray-600 rounded-l transition"
+                          className="p-1 text-[#24211D] hover:opacity-60 transition"
                           aria-label="Kurang satu"
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-3 h-3 stroke-[1.5]" />
                         </button>
-                        <span className="w-7 text-center text-xs font-semibold text-gray-800">
+                        <span className="w-6 text-center text-xs font-medium text-[#24211D]">
                           {quantity}
                         </span>
                         <button
+                          type="button"
                           onClick={() => updateQuantity(product.id, quantity + 1)}
-                          className="p-1 hover:bg-gray-200 text-gray-600 rounded-r transition"
+                          className="p-1 text-[#24211D] hover:opacity-60 transition"
                           aria-label="Tambah satu"
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus className="w-3 h-3 stroke-[1.5]" />
                         </button>
                       </div>
+
+                      <button
+                        type="button"
+                        onClick={() => removeItem(product.id)}
+                        className="text-xs text-[#6B655F] hover:text-[#24211D] underline underline-offset-2 decoration-[#EDE8E1] transition"
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -189,40 +197,44 @@ export const CartDrawer: React.FC = () => {
             )}
           </div>
 
-          {/* Footer Summary & Checkout */}
+          {/* Footer & Checkout Area */}
           {items.length > 0 && (
-            <div className="border-t border-gray-100 p-4 sm:p-5 bg-neutral-surface space-y-3">
-              <div className="space-y-1.5 text-xs text-gray-600">
-                <div className="flex justify-between">
-                  <span>Total Produk</span>
-                  <span className="font-semibold text-gray-900">Rp{totalPrice.toLocaleString('id-ID')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Estimasi Pengiriman</span>
-                  <span className="text-brand-700 font-medium">
-                    {totalPrice >= FREE_SHIPPING_THRESHOLD ? 'Gratis' : 'Dihitung saat checkout'}
-                  </span>
-                </div>
-                <div className="border-t border-gray-200 pt-2 flex justify-between text-sm font-bold text-gray-900">
-                  <span>Subtotal</span>
-                  <span className="text-brand-700 text-base">Rp{totalPrice.toLocaleString('id-ID')}</span>
-                </div>
+            <div className="border-t border-[#EDE8E1] p-5 bg-white space-y-4">
+              {/* Expandable Order Notes */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowOrderNotes(!showOrderNotes)}
+                  className="text-xs font-medium text-[#24211D] hover:opacity-75 flex items-center gap-1 transition"
+                >
+                  <span>Add order notes</span>
+                  <span>{showOrderNotes ? '−' : '+'}</span>
+                </button>
+                {showOrderNotes && (
+                  <div className="mt-2">
+                    <textarea
+                      rows={2}
+                      value={orderNotes}
+                      onChange={(e) => handleNotesChange(e.target.value)}
+                      placeholder="Special instructions for seller or courier..."
+                      className="w-full text-base sm:text-xs p-2.5 rounded-lg border border-[#EDE8E1] bg-[#FAF8F5] text-[#24211D] focus:outline-none focus:ring-1 focus:ring-[#24211D] focus:border-[#24211D] transition"
+                    />
+                  </div>
+                )}
               </div>
 
-              <button
-                onClick={() => {
-                  closeCart();
-                  navigate('/checkout');
-                }}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-[#009B4C] hover:bg-[#00823F] active:scale-[0.98] text-white text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition duration-200"
-              >
-                <span>Lanjut ke Pembayaran</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-400">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Transaksi Resmi & Bergaransi BPOM</span>
+              {/* Large Dark Pill Button: CHECKOUT • RP [TOTAL] IDR */}
+              <div className="pb-safe">
+                <button
+                  type="button"
+                  onClick={handleCheckout}
+                  className="w-full py-3.5 sm:py-4 bg-[#24211D] hover:bg-black active:scale-[0.99] text-white text-xs sm:text-sm font-semibold tracking-wider uppercase rounded-full shadow-xs transition duration-200 text-center"
+                >
+                  CHECKOUT • RP {totalPrice.toLocaleString('id-ID')},00 IDR
+                </button>
+                <p className="text-[11px] text-[#6B655F] text-center mt-2 font-normal">
+                  Shipping & taxes calculated at checkout
+                </p>
               </div>
             </div>
           )}

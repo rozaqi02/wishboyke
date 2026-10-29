@@ -168,7 +168,7 @@ export const ProductDetail: React.FC = () => {
     .slice(0, 4);
 
   return (
-    <div className="bg-[#FAF8F5] min-h-screen py-6 sm:py-10">
+    <div className="bg-[#FAF8F5] min-h-screen py-6 sm:py-10 pb-safe">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 space-y-10 sm:space-y-16">
         {/* Minimalist Scandinavian Breadcrumbs */}
         <nav className="flex items-center gap-1.5 text-xs text-stone-500 font-normal">

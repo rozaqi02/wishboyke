@@ -67,8 +67,8 @@ export const OrderTracking: React.FC = () => {
             city: 'Jakarta Selatan',
             postal_code: '12810',
           },
-          courier: 'JNE Express - REG (Layanan Reguler)',
-          tracking_number: 'JNE' + cleanCode.replace(/\D/g, '') + 'ID',
+          courier: 'J&T Express - EZ (Layanan Reguler)',
+          tracking_number: 'JT' + cleanCode.replace(/\D/g, '') + 'ID',
           is_discreet_packaging: true,
           status: 'shipped',
           payment_method: 'BCA Virtual Account',
@@ -101,7 +101,7 @@ export const OrderTracking: React.FC = () => {
 
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12 space-y-6 sm:space-y-8">
+    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12 space-y-6 sm:space-y-8 pb-safe">
       <div className="text-center space-y-1.5">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
           Lacak Status Pesanan
@@ -118,7 +118,7 @@ export const OrderTracking: React.FC = () => {
           value={orderCode}
           onChange={(e) => setOrderCode(e.target.value)}
           placeholder="Kode Pesanan WBK-XXXXXX"
-          className="flex-1 text-xs sm:text-sm px-3.5 py-2.5 rounded-lg border border-gray-200 focus:ring-1.5 focus:ring-brand-600 outline-none uppercase font-mono"
+          className="flex-1 text-base sm:text-sm px-3.5 py-2.5 rounded-lg border border-gray-200 focus:ring-1.5 focus:ring-brand-600 outline-none uppercase font-mono"
         />
         <button
           type="submit"

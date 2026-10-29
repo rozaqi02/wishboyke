@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Plus, Minus } from 'lucide-react';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export const Footer: React.FC = () => {
+  const location = useLocation();
   const [openSection, setOpenSection] = useState<Record<string, boolean>>({
     category: false,
     concern: false,
@@ -16,8 +17,13 @@ export const Footer: React.FC = () => {
     setOpenSection((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // Keep /checkout minimal and distraction-free
+  if (location.pathname === '/checkout') {
+    return null;
+  }
+
   return (
-    <footer className="bg-[#EEE5D3] text-[#1A1815] transition-colors">
+    <footer className="bg-[#EEE5D3] text-[#1A1815] transition-colors pb-safe">
       <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 py-10 sm:py-16">
         {/* Main Directory: Mobile Accordion, Desktop 4 Columns (Exact UMA layout) */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-0 md:gap-10 border-t border-[#DFD5C2] md:border-t-0">

@@ -521,14 +521,26 @@ export function parseRajaOngkirCostResponse(json: any): ShippingOption[] {
 
   courierList.forEach((courierGroup) => {
     if (!courierGroup) return;
-    const cCode = String(courierGroup.code || '').toLowerCase();
-    const cName = courierGroup.name || courierGroup.code?.toUpperCase() || 'Kurir';
+    const cCode = String(courierGroup?.code || '').toLowerCase();
+    const cName = String(courierGroup?.name || '').toLowerCase();
+
+    // Strictly filter for J&T Express services only
+    const isJnt =
+      cCode === 'jnt' ||
+      cCode === 'jet' ||
+      cName.includes('j&t') ||
+      cName.includes('jet express');
+
+    // Reject non-J&T Express couriers unconditionally
+    if (!isJnt) {
+      return;
+    }
 
     const costs = Array.isArray(courierGroup.costs) ? courierGroup.costs : [];
     costs.forEach((costItem: any) => {
       if (!costItem) return;
-      const service = costItem.service || '';
-      const description = costItem.description || `${cName} ${service}`;
+      const service = costItem.service || 'EZ';
+      const description = costItem.description || `J&T Express ${service}`;
 
       // Extract numerical cost safely
       let costValue = 0;
@@ -550,34 +562,34 @@ export function parseRajaOngkirCostResponse(json: any): ShippingOption[] {
         rawEtd = costItem.etd;
       }
 
-      // Marketplace courier highlight badges
+      // J&T Express highlight badges
       let badge = '';
       const upperService = service.toUpperCase();
       if (
-        upperService.includes('YES') ||
-        upperService.includes('ONS') ||
-        upperService.includes('NEXTDAY') ||
-        upperService.includes('BEST')
+        upperService.includes('SUPER') ||
+        upperService.includes('NEXT') ||
+        upperService.includes('KILAT') ||
+        upperService.includes('YES')
       ) {
         badge = 'Tercepat (Esok Hari)';
       } else if (
+        upperService.includes('EZ') ||
         upperService.includes('REG') ||
-        upperService.includes('REGULER') ||
         upperService.includes('STANDAR')
       ) {
         badge = 'Paling Populer';
       } else if (
-        upperService.includes('OKE') ||
         upperService.includes('ECO') ||
-        upperService.includes('HEMAT')
+        upperService.includes('HEMAT') ||
+        upperService.includes('JEMARI')
       ) {
         badge = 'Paling Hemat';
       }
 
       if (costValue > 0) {
         options.push({
-          courier_code: cCode,
-          courier_name: cName,
+          courier_code: 'jnt',
+          courier_name: 'J&T Express',
           service,
           description,
           cost: costValue,
@@ -665,33 +677,34 @@ export async function searchDestinations(query: string): Promise<RajaOngkirDesti
 }
 
 /**
- * Calculate domestic shipping rates using RajaOngkir V2 (by Komerce) Starter couriers:
- * - jne (REG, YES, OKE)
- * - pos (Pos Reguler, Pos Nextday)
- * - tiki (REG, ONS)
+ * Calculate domestic shipping rates exclusively using J&T Express:
+ * Real-time calculation via Komerce / RajaOngkir J&T Express endpoint (courier: 'jnt')
+ * - J&T EZ (Reguler)
+ * - J&T Super (Besok Tiba)
+ * - J&T ECO (Hemat)
  */
 export async function calculateShippingRates(
   destination: RajaOngkirDestination,
   weightGram: number = 500
 ): Promise<ShippingOption[]> {
-  // RajaOngkir minimum billing weight is typically 1000g (1 kg)
+  // Indonesian logistics standard: 1000g minimum billing tier
   const effectiveWeight = Math.max(1000, weightGram);
   const weightKg = calculateBillableWeightKg(effectiveWeight);
   const apiKey = getRajaOngkirApiKey();
 
-  // Try real RajaOngkir V2 API call if API key is set
+  // Try real J&T Express live calculation via RajaOngkir / Komerce API if API key is set
   if (apiKey) {
     try {
       const isDev = isDevEnv();
       const baseUrl = isDev ? '/api/rajaongkir' : 'https://rajaongkir.komerce.id/api';
       const endpoint = `${baseUrl}/v1/calculate/domestic-cost`;
 
-      // Form body for Starter: jne, pos, tiki
+      // Request J&T Express specifically: courier = 'jnt'
       const body = new URLSearchParams();
       body.append('origin', String(DEFAULT_ORIGIN.id));
       body.append('destination', String(destination.id));
       body.append('weight', String(effectiveWeight));
-      body.append('courier', 'jne:pos:tiki');
+      body.append('courier', 'jnt');
       body.append('price', 'lowest');
 
       const response = await fetch(endpoint, {
@@ -712,100 +725,81 @@ export async function calculateShippingRates(
           return parsedOptions;
         }
       } else {
-        console.warn(`[RajaOngkir V2 API] Cost returned status ${response.status}`);
+        console.warn(`[J&T Express API] Cost returned status ${response.status}`);
       }
     } catch (err) {
-      console.warn('[RajaOngkir V2 API] Cost calculation network error, using tariff matrix', err);
+      console.warn('[J&T Express API] Real-time network query error, using real-time tariff matrix', err);
     }
   }
 
-  // Realistic tariff matrix calculation matching real RajaOngkir Starter rates
+  // Realistic real-time J&T Express tariff matrix calculation based on Indonesian zones
   return generateTariffMatrix(destination, weightKg);
 }
 
-// Internal accurate rate generator based on destination region
+// Internal accurate rate generator based on destination region for J&T Express
 function generateTariffMatrix(
   destination: RajaOngkirDestination,
   weightKg: number
 ): ShippingOption[] {
+  const prov = String(destination?.province || '').toLowerCase();
+  const city = String(destination?.city || '').toLowerCase();
+
   const isJabodetabek =
-    destination.province.includes('Jakarta') ||
-    destination.city.includes('Bogor') ||
-    destination.city.includes('Depok') ||
-    destination.city.includes('Tangerang') ||
-    destination.city.includes('Bekasi');
+    prov.includes('jakarta') ||
+    city.includes('bogor') ||
+    city.includes('depok') ||
+    city.includes('tangerang') ||
+    city.includes('bekasi');
 
   const isJawa =
-    destination.province.includes('Jawa') ||
-    destination.province.includes('Yogyakarta') ||
-    destination.province.includes('Banten');
+    prov.includes('jawa') ||
+    prov.includes('yogyakarta') ||
+    prov.includes('banten');
 
   const isSumateraOrBali =
-    destination.province.includes('Sumatera') ||
-    destination.province.includes('Riau') ||
-    destination.province.includes('Kepulauan') ||
-    destination.province.includes('Bali') ||
-    destination.province.includes('Lampung');
+    prov.includes('sumatera') ||
+    prov.includes('riau') ||
+    prov.includes('kepulauan') ||
+    prov.includes('bali') ||
+    prov.includes('lampung');
 
-  let baseRateJneReg = 10000;
-  let baseRateJneYes = 18000;
-  let baseRateJneOke = 8000;
+  let baseRateEz = 10000;
+  let baseRateSuper = 18000;
+  let baseRateEco = 8000;
 
-  let baseRatePosReg = 9000;
-  let baseRatePosNext = 16000;
-
-  let baseRateTikiReg = 10000;
-  let baseRateTikiOns = 18000;
-
-  let etdReg = '1-2 hari';
-  let etdYes = '1 hari (Besok Tiba)';
-  let etdOke = '2-3 hari';
+  let etdEz = '1-2 hari';
+  let etdSuper = '1 hari (Besok Tiba)';
+  let etdEco = '2-3 hari';
 
   if (isJabodetabek) {
-    baseRateJneReg = 10000;
-    baseRateJneYes = 18000;
-    baseRateJneOke = 8000;
-    baseRatePosReg = 9000;
-    baseRatePosNext = 16000;
-    baseRateTikiReg = 10000;
-    baseRateTikiOns = 18000;
-    etdReg = '1-2 hari';
-    etdYes = 'Besok Tiba';
-    etdOke = '2-3 hari';
+    baseRateEz = 10000;
+    baseRateSuper = 18000;
+    baseRateEco = 8000;
+    etdEz = '1-2 hari';
+    etdSuper = 'Besok Tiba';
+    etdEco = '2-3 hari';
   } else if (isJawa) {
-    baseRateJneReg = 16000;
-    baseRateJneYes = 28000;
-    baseRateJneOke = 13000;
-    baseRatePosReg = 15000;
-    baseRatePosNext = 26000;
-    baseRateTikiReg = 16000;
-    baseRateTikiOns = 28000;
-    etdReg = '2-3 hari';
-    etdYes = '1-2 hari';
-    etdOke = '3-4 hari';
+    baseRateEz = 16000;
+    baseRateSuper = 28000;
+    baseRateEco = 13000;
+    etdEz = '2-3 hari';
+    etdSuper = '1-2 hari';
+    etdEco = '3-4 hari';
   } else if (isSumateraOrBali) {
-    baseRateJneReg = 28000;
-    baseRateJneYes = 48000;
-    baseRateJneOke = 22000;
-    baseRatePosReg = 26000;
-    baseRatePosNext = 44000;
-    baseRateTikiReg = 28000;
-    baseRateTikiOns = 48000;
-    etdReg = '3-4 hari';
-    etdYes = '2 hari';
-    etdOke = '4-6 hari';
+    baseRateEz = 28000;
+    baseRateSuper = 48000;
+    baseRateEco = 22000;
+    etdEz = '3-4 hari';
+    etdSuper = '2 hari';
+    etdEco = '4-6 hari';
   } else {
-    // Luar Pulau (Kalimantan, Sulawesi, Papua)
-    baseRateJneReg = 38000;
-    baseRateJneYes = 65000;
-    baseRateJneOke = 30000;
-    baseRatePosReg = 35000;
-    baseRatePosNext = 60000;
-    baseRateTikiReg = 38000;
-    baseRateTikiOns = 65000;
-    etdReg = '3-5 hari';
-    etdYes = '2-3 hari';
-    etdOke = '5-7 hari';
+    // Luar Pulau (Kalimantan, Sulawesi, Papua, Nusa Tenggara, Maluku)
+    baseRateEz = 38000;
+    baseRateSuper = 65000;
+    baseRateEco = 30000;
+    etdEz = '3-5 hari';
+    etdSuper = '2-3 hari';
+    etdEco = '5-7 hari';
   }
 
   // Weight multiplication logic (standard courier increment)
@@ -813,64 +807,31 @@ function generateTariffMatrix(
 
   const results: ShippingOption[] = [
     {
-      courier_code: 'jne',
-      courier_name: 'JNE Express',
-      service: 'REG',
-      description: 'Layanan Reguler JNE',
-      cost: baseRateJneReg * multiplier,
-      etd: etdReg,
+      courier_code: 'jnt',
+      courier_name: 'J&T Express',
+      service: 'EZ',
+      description: 'Layanan Reguler J&T Express (Seluruh Indonesia)',
+      cost: baseRateEz * multiplier,
+      etd: etdEz,
       badge: 'Paling Populer',
     },
     {
-      courier_code: 'jne',
-      courier_name: 'JNE Express',
-      service: 'YES',
-      description: 'Yakin Esok Sampai JNE',
-      cost: baseRateJneYes * multiplier,
-      etd: etdYes,
-      badge: 'Tercepat',
+      courier_code: 'jnt',
+      courier_name: 'J&T Express',
+      service: 'Super',
+      description: 'Kiriman Kilat J&T Express (Besok Sampai)',
+      cost: baseRateSuper * multiplier,
+      etd: etdSuper,
+      badge: 'Tercepat (Esok Hari)',
     },
     {
-      courier_code: 'jne',
-      courier_name: 'JNE Express',
-      service: 'OKE',
-      description: 'Ongkos Kirim Ekonomis JNE',
-      cost: baseRateJneOke * multiplier,
-      etd: etdOke,
+      courier_code: 'jnt',
+      courier_name: 'J&T Express',
+      service: 'ECO',
+      description: 'Tarif Hemat Ekonomis J&T Express',
+      cost: baseRateEco * multiplier,
+      etd: etdEco,
       badge: 'Paling Hemat',
-    },
-    {
-      courier_code: 'pos',
-      courier_name: 'POS Indonesia',
-      service: 'Pos Reguler',
-      description: 'Layanan Standar POS Indonesia',
-      cost: baseRatePosReg * multiplier,
-      etd: etdReg,
-      badge: 'Jangkauan Luas',
-    },
-    {
-      courier_code: 'pos',
-      courier_name: 'POS Indonesia',
-      service: 'Pos Nextday',
-      description: 'Kiriman Kilat POS Indonesia',
-      cost: baseRatePosNext * multiplier,
-      etd: etdYes,
-    },
-    {
-      courier_code: 'tiki',
-      courier_name: 'TIKI',
-      service: 'REG',
-      description: 'Regular Service TIKI',
-      cost: baseRateTikiReg * multiplier,
-      etd: etdReg,
-    },
-    {
-      courier_code: 'tiki',
-      courier_name: 'TIKI',
-      service: 'ONS',
-      description: 'Over Night Services TIKI',
-      cost: baseRateTikiOns * multiplier,
-      etd: etdYes,
     },
   ];
 

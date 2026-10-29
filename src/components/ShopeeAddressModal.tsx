@@ -257,7 +257,7 @@ export const ShopeeAddressModal: React.FC<ShopeeAddressModalProps> = ({
                   placeholder="Contoh: Budi Santoso"
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
-                  className="w-full bg-[#FAF8F5] border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-[#24211D] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#009B4C]"
+                  className="w-full bg-[#FAF8F5] border border-stone-200 rounded-lg px-3 py-2 text-base sm:text-sm text-[#24211D] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#009B4C]"
                 />
               </div>
 
@@ -271,7 +271,7 @@ export const ShopeeAddressModal: React.FC<ShopeeAddressModalProps> = ({
                   placeholder="08xxxxxxxxxx"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-[#FAF8F5] border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-[#24211D] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#009B4C]"
+                  className="w-full bg-[#FAF8F5] border border-stone-200 rounded-lg px-3 py-2 text-base sm:text-sm text-[#24211D] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#009B4C]"
                 />
               </div>
             </div>
@@ -334,7 +334,7 @@ export const ShopeeAddressModal: React.FC<ShopeeAddressModalProps> = ({
                 placeholder="Contoh: Seberang Indomaret, rumah cat hijau, pagar hitam tinggi"
                 value={patokan}
                 onChange={(e) => setPatokan(e.target.value)}
-                className="w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-[#24211D] focus:outline-none focus:ring-1 focus:ring-[#009B4C]"
+                className="w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-base sm:text-sm text-[#24211D] focus:outline-none focus:ring-1 focus:ring-[#009B4C]"
               />
               <p className="text-[10px] text-stone-500">
                 Membantu kurir JNE, POS, dan TIKI menemukan lokasi tanpa tersasar atau harus menelepon berulang kali.
@@ -509,7 +509,7 @@ export const ShopeeAddressModal: React.FC<ShopeeAddressModalProps> = ({
                   placeholder={`Cari nama ${cascadeStep}...`}
                   value={cascadeSearch}
                   onChange={(e) => setCascadeSearch(e.target.value)}
-                  className="w-full bg-[#FAF8F5] text-xs sm:text-sm text-[#24211D] pl-8 pr-3 py-2 rounded-lg border border-stone-200 focus:outline-none focus:ring-1 focus:ring-[#009B4C]"
+                  className="w-full bg-[#FAF8F5] text-base sm:text-sm text-[#24211D] pl-8 pr-3 py-2 rounded-lg border border-stone-200 focus:outline-none focus:ring-1 focus:ring-[#009B4C]"
                 />
                 <Search className="w-4 h-4 text-stone-400 absolute left-2.5 top-2.5" />
               </div>

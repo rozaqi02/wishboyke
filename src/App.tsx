@@ -19,7 +19,7 @@ export const App: React.FC = () => {
     <Router>
       <ScrollToTop />
       <CartProvider>
-        <div className="min-h-screen flex flex-col bg-neutral-surface text-gray-900 antialiased font-sans">
+        <div className="min-h-screen w-full max-w-[100vw] overflow-x-clip flex flex-col bg-neutral-surface text-gray-900 antialiased font-sans">
           {/* Main Navigation Header */}
           <Navbar />
 
@@ -27,9 +27,10 @@ export const App: React.FC = () => {
           <CartDrawer />
 
           {/* Route Outlet */}
-          <main className="flex-1">
+          <main className="flex-1 w-full max-w-[100vw] overflow-x-clip">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/boost" element={<Home />} />
               <Route path="/catalog" element={<Catalog />} />
               <Route path="/product/:slug" element={<ProductDetail />} />
               <Route path="/checkout" element={<Checkout />} />

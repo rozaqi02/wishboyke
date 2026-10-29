@@ -64,4 +64,8 @@ Thumbs.db
 ehthumbs.db
 .gemini/
 .antigravity/
+.agents/
+
+# Temporary test & inspection outputs
+inspect_output/
 
