@@ -133,11 +133,11 @@ export const Home: React.FC = () => {
               FORMULA RESMI DR. BOYKE
             </span>
 
-            <h1 className="text-[19px] sm:text-2xl md:text-3xl lg:text-[34px] xl:text-[38px] font-normal text-[#1A1815] tracking-tight leading-none whitespace-nowrap">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[34px] xl:text-[38px] font-normal text-[#1A1815] tracking-tight leading-snug md:leading-none whitespace-normal md:whitespace-nowrap">
               Suplemen Herbal Terbaik Untuk Wanita
             </h1>
             
-            <p className="text-[11px] sm:text-xs md:text-sm text-stone-700 font-normal leading-normal whitespace-nowrap">
+            <p className="text-xs sm:text-[13px] md:text-sm text-stone-600 font-normal leading-relaxed md:leading-normal whitespace-normal md:whitespace-nowrap max-w-xl">
               Formula klinis teruji dr. Boyke Dian Nugraha • 100% herbal berkhasiat terdaftar BPOM &amp; Halal.
             </p>
 
